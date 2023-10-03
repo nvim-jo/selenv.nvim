@@ -81,6 +81,18 @@ M.get_current_venv = function()
   return current_venv
 end
 
+M.check_if_venv_name_exists = function(name)
+  local found = false
+  for _, value in ipairs(settings.name) do
+    if value == name then
+      found = true
+      break
+    end 
+  end
+
+  return found
+end
+
 M.get_venvs = function(venvs_path)
   local success, Path = pcall(require, 'plenary.path')
   if not success then
@@ -109,26 +121,16 @@ M.get_venvs = function(venvs_path)
   -- VENV
   local paths = scan_dir(venvs_path, { depth = 1, only_dirs = true, silent = true })
   for _, path in ipairs(paths) do
-    table.insert(venvs, {
-      -- TODO how does one get the name of the file directly?
-      name = Path:new(path):make_relative(venvs_path),
-      path = path,
-      source = 'venv',
-    })
-
-    table.insert(venvs, {
-      -- TODO how does one get the name of the file directly?
-      name = Path:new(path):make_relative(venvs_path),
-      path = path,
-      source = '.venv',
-    })
-
-    table.insert(venvs, {
-      -- TODO how does one get the name of the file directly?
-      name = Path:new(path):make_relative(venvs_path),
-      path = path,
-      source = '.env',
-    })
+    local name = Path:new(path):make_relative(venvs_path)
+    local exists = M.check_if_venv_name_exists(name)
+    if exists then
+      table.insert(venvs, {
+        -- TODO how does one get the name of the file directly?
+        name = Path:new(path):make_relative(venvs_path),
+        path = path,
+        source = 'venv',
+      }) 
+    end
   end
 
   return venvs
@@ -138,7 +140,7 @@ M.pick_venv = function()
   vim.ui.select(settings.get_venvs(settings.venvs_path), {
     prompt = 'Virtual Environments',
     format_item = function(item)
-      return string.format('%s %s (%s) [%s]', "", item.name, item.path, item.source)
+      return string.format('%s %s (%s)', "", item.name, item.path)
     end,
   }, function(choice)
     if not choice then
