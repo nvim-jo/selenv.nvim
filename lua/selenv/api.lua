@@ -119,7 +119,7 @@ M.get_venvs = function(venvs_path)
   end
 
   -- VENV
-  local paths = scan_dir(venvs_path, { depth = 2, only_dirs = true, silent = true })
+  local paths = scan_dir(venvs_path, { depth = 3, only_dirs = true, silent = true })
   for _, path in ipairs(paths) do
     local name = Path:new(path):make_relative(venvs_path)
     local exists = M.check_if_venv_name_exists(name)
